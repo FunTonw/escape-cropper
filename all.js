@@ -23,40 +23,46 @@ uploadbtn.addEventListener('click', function(){
   uploadinput.click();
 })
 
-uploadinput.addEventListener('change',function(e) {
+// 當input改變
+uploadinput.addEventListener('change',function() {
   if (this.files.length > 0){
-     let reader = new FileReader()
-     let img = new Image();
-     uploadimg.addEventListener("load", function () {
-      recanvas.height = img.height;
-      recanvas.width = img.width;
-      recanvas.getContext("2d").drawImage(img, 0, 0, img.width, img.height);
-      // recanvas.getContext("2d").drawImage(uploadimg, 0, 0, uploadimg.width, uploadimg.height);
-      new Cropper(recanvas, {
-        aspectRatio: 16 / 9,
-        viewMode: 2,
-      });
-     });
-     img.src =  URL.createObjectURL(this.files[0]);
-     uploadimg.src = URL.createObjectURL(this.files[0]);
-  //解放記憶體(?
-   uploadimg.onload = function() {
+    let img = new Image();
+    //load進渲染後 動作
+    uploadimg.addEventListener("load", function () {
+     cropper.destroy();   //重製裁切版
+     //製作<canvas>
+     recanvas.height = img.height;
+     recanvas.width = img.width;
+     recanvas.getContext("2d").drawImage(img, 0, 0, img.width, img.height);
+     //製作裁切版
+     cropper = new Cropper(recanvas);
+    
+     //解放記憶體(?
      URL.revokeObjectURL(uploadimg.src)
      URL.revokeObjectURL(img.src)
-   }
+    });
 
+    // 上傳圖片
+    img.src =  URL.createObjectURL(this.files[0]);
+    uploadimg.src = URL.createObjectURL(this.files[0]);
 
-  uploadbtn.classList.add('hidden');
-  if( Array.from(uploadimg.classList).indexOf('hidden') >= 0) {
-      uploadimg.classList.remove('hidden');
-  }
+    uploadbtn.classList.add('hidden');
+    if( Array.from(uploadimg.classList).indexOf('hidden') >= 0) {
+        uploadimg.classList.remove('hidden');
+    }
   }
 })
 
+// 重新上傳
 reuploadbtn.addEventListener('click', function() {
   uploadimg.classList.add('hidden');
   uploadbtn.classList.remove('hidden');
   uploadinput.click();
+
 })
 
-//cropper
+//cropper 裁切版
+let cropper = new Cropper(recanvas, {
+  aspectRatio: 16 / 9,
+  viewMode: 2,
+ });
