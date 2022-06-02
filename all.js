@@ -15,18 +15,15 @@ const editingButtonGroup = document.querySelector('.editing_button-group');
 editingButtonGroup.addEventListener('click', (e)=>{
   let num;
   if (e.target.nodeName === 'BUTTON') {
-    console.log(e.target.id);
     num = (e.target.id === 'rotate-left') ? 1 :
     (e.target.id === 'rotate-right') ? 2 :
     (e.target.id === 'ratio-sqaure') ? 3 :
     (e.target.id === 'ratio-rec') ? 4 :
     (e.target.id === 'ratio-free') ? 5 :
     0;
-    
     switch (num) {
       case 1:
         cropper.rotate(-90);
-        console.log('21');
         break;
       case 2:
         cropper.rotate(90);
@@ -45,6 +42,7 @@ editingButtonGroup.addEventListener('click', (e)=>{
     }
   }
 })
+
 // uploadImg
 const uploadbtn = document.querySelector('.input-file-button');
 const uploadinput = document.querySelector('.input-file-button-origin');
@@ -52,6 +50,9 @@ const uploadimg = document.getElementById('uploaded-img');
 const reuploadbtn = document.querySelector('#btn-reupload')
 //cropper img
 let recanvas = document.getElementById('recanvas');
+
+//preview img
+let previewimg = document.getElementById('preview');
 
 uploadbtn.addEventListener('click', function(){
   uploadinput.click();
@@ -72,13 +73,16 @@ uploadinput.addEventListener('change',function() {
      cropper = new Cropper(recanvas,{
       aspectRatio: 16 / 9,
       viewMode: 2,
+      movable: false,
+      cropend: function(e) {
+        previewimg.src = cropper.getCroppedCanvas().toDataURL(); 
+      },
      });
-    
+
      //解放記憶體(?
      URL.revokeObjectURL(uploadimg.src)
      URL.revokeObjectURL(img.src)
     });
-
     // 上傳圖片
     img.src =  URL.createObjectURL(this.files[0]);
     uploadimg.src = URL.createObjectURL(this.files[0]);
@@ -101,3 +105,9 @@ reuploadbtn.addEventListener('click', function() {
 
 //cropper 裁切版
 let cropper = new Cropper(recanvas);
+
+
+//預覽
+recanvas.addEventListener('ready', function () {
+  previewimg.src = cropper.getCroppedCanvas().toDataURL();
+});
