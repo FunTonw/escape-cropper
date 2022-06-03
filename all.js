@@ -54,6 +54,9 @@ let recanvas = document.getElementById('recanvas');
 //preview img
 let previewimg = document.getElementById('preview');
 
+//img
+let watermarkImagePath = 'https://hexschool.github.io/escape-cropper/photo.png'
+
 uploadbtn.addEventListener('click', function(){
   uploadinput.click();
 })
@@ -74,8 +77,16 @@ uploadinput.addEventListener('change',function() {
       aspectRatio: 16 / 9,
       viewMode: 2,
       movable: false,
-      cropend: function(e) {
-        previewimg.src = cropper.getCroppedCanvas().toDataURL(); 
+      //移動時重新渲染預覽圖, 含浮水印
+      crop: function() {
+        let preimg = new Image();
+        preimg.src = cropper.getCroppedCanvas().toDataURL();
+        preimg.addEventListener("load", async () => {
+          previewimg.src = await watermarkImage(
+            preimg,
+            'https://hexschool.github.io/escape-cropper/photo.png'
+          );
+        });
       },
      });
 
@@ -83,7 +94,7 @@ uploadinput.addEventListener('change',function() {
      URL.revokeObjectURL(uploadimg.src)
      URL.revokeObjectURL(img.src)
     });
-    // 上傳圖片
+    // 上傳圖片 
     img.src =  URL.createObjectURL(this.files[0]);
     uploadimg.src = URL.createObjectURL(this.files[0]);
 
@@ -95,19 +106,43 @@ uploadinput.addEventListener('change',function() {
   }
 })
 
-// 重新上傳
+// 重新上傳圖檔
 reuploadbtn.addEventListener('click', function() {
   uploadimg.classList.add('hidden');
   uploadbtn.classList.remove('hidden');
   uploadinput.click();
-
 })
 
 //cropper 裁切版
 let cropper = new Cropper(recanvas);
 
-
-//預覽
-recanvas.addEventListener('ready', function () {
-  previewimg.src = cropper.getCroppedCanvas().toDataURL();
-});
+// 浮水印 https://hexschool.github.io/escape-cropper/photo.png
+async function watermarkImage(originalImage, watermarkImagePath) {
+  const canvas = document.createElement("canvas");
+  const context = canvas.getContext("2d");
+  
+  const canvasWidth = originalImage.width;
+  const canvasHeight = originalImage.height;
+  
+  canvas.width = canvasWidth;
+  canvas.height = canvasHeight;
+  
+  // initializing the canvas with the original image
+  context.drawImage(originalImage, 0, 0, canvasWidth, canvasHeight);
+  
+  // loading the watermark image and transforming it into a pattern
+  const result = await fetch(watermarkImagePath);
+  const blob = await result.blob();
+  const image = await createImageBitmap(blob, {
+    resizeWidth: canvasWidth / 6,
+    resizeHeight: this.resizeWidth
+  });
+  const pattern = context.createPattern(image, "no-repeat");
+  
+  // translating the watermark image to the bottom right corner
+  context.translate(canvasWidth - image.width, canvasHeight - image.height);
+  context.rect(0, 0, canvasWidth, canvasHeight);
+  context.fillStyle = pattern;
+  context.fill();
+  return canvas.toDataURL();
+}
