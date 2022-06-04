@@ -42,7 +42,8 @@ editingButtonGroup.addEventListener('click', (e)=>{
     }
   }
 })
-
+// downloadbtn
+const downloadbtn = document.querySelector('#download');
 // uploadImg
 const uploadbtn = document.querySelector('.input-file-button');
 const uploadinput = document.querySelector('.input-file-button-origin');
@@ -65,6 +66,7 @@ uploadbtn.addEventListener('click', function(){
 uploadinput.addEventListener('change',function() {
   if (this.files.length > 0){
     let img = new Image();
+    let preimg = new Image();
     //load進渲染後 動作
     uploadimg.addEventListener("load", function () {
      cropper.destroy();   //重製裁切版
@@ -86,6 +88,7 @@ uploadinput.addEventListener('change',function() {
             preimg,
             'https://hexschool.github.io/escape-cropper/photo.png'
           );
+          downloadbtn.href = previewimg.src;
         });
       },
      });
